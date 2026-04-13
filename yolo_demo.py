@@ -2,13 +2,12 @@ from ultralytics import YOLO
 import cv2
 import time
 
-# Load YOLO model
 model = YOLO("yolov8n.pt")
 
-# SETTINGS
-PERSON_THRESHOLD = 6     # Global crowd alert
-GRID_SIZE = 4            # 4x4 grid
-ZONE_THRESHOLD = 3       # Per-cell overcrowding
+
+PERSON_THRESHOLD = 6    
+GRID_SIZE = 4            
+ZONE_THRESHOLD = 3       
 
 
 def main(source=0):
@@ -25,10 +24,10 @@ def main(source=0):
         cell_w = w // GRID_SIZE
         cell_h = h // GRID_SIZE
 
-        # Grid initialization
+    
         grid = [[0]*GRID_SIZE for _ in range(GRID_SIZE)]
 
-        # YOLO Detection
+    
         results = model(frame, conf=0.5, verbose=False)
 
         person_count = 0
@@ -37,30 +36,30 @@ def main(source=0):
             for box in r.boxes:
                 cls = int(box.cls[0])
 
-                if cls == 0:  # person
+                if cls == 0:  
                     person_count += 1
 
                     x1, y1, x2, y2 = map(int, box.xyxy[0])
 
-                    # Draw bounding box
+                    
                     cv2.rectangle(frame, (x1, y1), (x2, y2), (0,255,0), 2)
 
-                    # Center point
+            
                     cx = (x1 + x2) // 2
                     cy = (y1 + y2) // 2
 
-                    # Map to grid
+                    
                     gx = min(cx // cell_w, GRID_SIZE - 1)
                     gy = min(cy // cell_h, GRID_SIZE - 1)
 
                     grid[gy][gx] += 1
 
-        # Draw grid lines
+        
         for i in range(1, GRID_SIZE):
             cv2.line(frame, (i*cell_w, 0), (i*cell_w, h), (255,255,255), 1)
             cv2.line(frame, (0, i*cell_h), (w, i*cell_h), (255,255,255), 1)
 
-        # 🔥 SMART ZONE COLORING
+        
         overlay = frame.copy()
         zone_alert = False
 
@@ -69,12 +68,12 @@ def main(source=0):
                 count = grid[y][x]
 
                 if count >= ZONE_THRESHOLD:
-                    color = (0, 0, 255)  # RED (high density)
+                    color = (0, 0, 255)  
                     zone_alert = True
                 elif count == 2:
-                    color = (0, 255, 255)  # YELLOW (medium)
+                    color = (0, 255, 255)  
                 elif count == 1:
-                  continue   # ❌ skip green
+                  continue   
 
                 cv2.rectangle(
                     overlay,
@@ -84,10 +83,10 @@ def main(source=0):
                     -1
                 )
 
-        # Blend overlay ONCE
+        
         frame = cv2.addWeighted(overlay, 0.18, frame, 0.82, 0)
 
-        # 🔥 ALERTS
+       
         if person_count >= PERSON_THRESHOLD:
             cv2.putText(frame, "ALERT: HIGH CROWD", (10, 60),
                         cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2)
@@ -96,10 +95,10 @@ def main(source=0):
             cv2.putText(frame, "ZONE OVERCROWD", (10, 110),
                         cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2)
 
-        # FPS
+        
         fps = 1 / (time.time() - start)
 
-        # Display info
+
         cv2.putText(frame, f"Count: {person_count}", (10,30),
                     cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
 
