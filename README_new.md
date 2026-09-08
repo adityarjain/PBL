@@ -87,12 +87,55 @@ python experiment_confidence_thresholds.py
 - **0.5 (balanced):** Default, good balance
 - **0.7 (high):** Fewer false positives, might miss people
 
+## Phase 2: Temporal Smoothing Experiment
+
+**Research question:** Does moving-average smoothing of detection counts reduce
+alert flicker/noise without a significant FPS or latency cost?
+
+This is run as a controlled experiment, not assumed to work — `yolo_demo.py`
+is kept unmodified as the reference baseline; `yolo_demo_v2_smoothed.py` is an
+isolated copy with only the smoothing logic added (5-frame moving average on
+both the global person count and each grid zone's count).
+
+### Quick sanity check (no video/model needed)
+
+```bash
+python test_smoothing.py
+```
+
+### Run the experiment
+
+```bash
+# 1. Measure baseline (raw, unsmoothed) alert behavior
+python measure_system_metrics.py --mode baseline --source videos/crowd.mp4 --out baseline_measurements.csv
+
+# 2. Measure smoothed alert behavior on the SAME video
+python measure_system_metrics.py --mode smoothed --source videos/crowd.mp4 --out v2_measurements.csv
+
+# 3. Compare
+python compare_baseline_vs_v2.py --baseline baseline_measurements.csv --v2 v2_measurements.csv
+```
+
+Produces `comparison_report.md` with measured (not assumed) results:
+alert event counts, transient/flickering alert rate, alert duration,
+detection variability, and latency — for both the global crowd alert and
+the per-zone overcrowd alert.
+
+**Note:** `videos/crowd.mp4` is real footage without per-frame ground-truth
+annotations, so we report alert frequency/duration/stability rather than a
+"false positive rate" we can't actually substantiate.
+
+### Visual check
+
+```bash
+python yolo_demo_v2_smoothed.py   # webcam, side-by-side comparable to yolo_demo.py
+```
+
 ## Next Steps
 
-- Temporal smoothing (reduce frame-to-frame noise)
-- Object tracking (maintain person identity)
-- Zone persistence (require condition to persist N frames)
-- Performance comparison vs baseline
+- Evidence-based decision on frame persistence/hysteresis (Tier 2), based on
+  the Phase 2 measurement results above
+- Object tracking (maintain person identity) — deferred until justified by data
 
 ## References
 

@@ -5,6 +5,9 @@ venv/
 __pycache__/
 *.pyc
 
+# Downloaded model weights
+yolov8n.pt
+
 # OS
 .DS_Store
 
