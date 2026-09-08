@@ -67,13 +67,18 @@ def main(source=0):
             for x in range(GRID_SIZE):
                 count = grid[y][x]
 
+                # Skip empty zones
+                if count == 0:
+                    continue
+
+                # Assign color based on density
                 if count >= ZONE_THRESHOLD:
-                    color = (0, 0, 255)  
+                    color = (0, 0, 255)  # Red - HIGH DENSITY
                     zone_alert = True
                 elif count == 2:
-                    color = (0, 255, 255)  
-                elif count == 1:
-                  continue   
+                    color = (0, 255, 255)  # Cyan - MODERATE
+                else:  # count == 1
+                    color = (0, 255, 0)  # Green - LOW DENSITY
 
                 cv2.rectangle(
                     overlay,
