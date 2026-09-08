@@ -37,12 +37,62 @@ Press `q` to quit.
 ✓ Real-time alerts working  
 ⚠️ Performance metrics being measured  
 
+## Evaluation
+
+### Baseline Performance Measurement
+
+Run baseline evaluation to measure FPS, inference time, and detection counts on your hardware:
+
+```bash
+python evaluate_baseline.py
+```
+
+**Arguments:**
+- `source` (default: 0 = webcam, or path to video file)
+- `duration_seconds` (default: 60)
+- `confidence` (default: 0.5)
+
+**Example with video file:**
+```bash
+python evaluate_baseline.py "path/to/video.mp4" 60 0.5
+```
+
+**Output:**
+- Console summary with metrics
+- Results saved to `baseline_results.json`
+
+Measures:
+- Average FPS on your hardware
+- Inference time per frame (ms)
+- Total people detected
+- Memory usage
+- Test conditions (resolution, date, source)
+
+### Confidence Threshold Optimization
+
+Test different confidence thresholds to find optimal balance between detection accuracy and false positives:
+
+```bash
+python experiment_confidence_thresholds.py
+```
+
+**Tests thresholds:** 0.3, 0.5, 0.7
+
+**Output:**
+- Console table with results
+- Results saved to `conf_threshold_results.csv`
+
+**Tradeoffs:**
+- **0.3 (low):** More detections, more false positives
+- **0.5 (balanced):** Default, good balance
+- **0.7 (high):** Fewer false positives, might miss people
+
 ## Next Steps
 
-- Baseline FPS/accuracy measurement
-- Confidence threshold tuning
-- Temporal smoothing
-- Object tracking
+- Temporal smoothing (reduce frame-to-frame noise)
+- Object tracking (maintain person identity)
+- Zone persistence (require condition to persist N frames)
+- Performance comparison vs baseline
 
 ## References
 
